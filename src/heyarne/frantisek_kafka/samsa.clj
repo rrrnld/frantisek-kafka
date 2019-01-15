@@ -1,7 +1,6 @@
 (ns heyarne.frantisek-kafka.samsa
   "Create your own Kafka."
-  (:require [clojure.java.io :as io]
-            [clojure.string :as str]
+  (:require [clojure.string :as str]
             [clojure.tools.cli :refer [parse-opts]]
             [taoensso.timbre :as log]
             [clj-http.client :as http]
@@ -19,19 +18,19 @@
 
 (def sentence-ending? #(some? (re-find #"[.?!]$" %)))
 
-(defn valid-start? [elem]
-  (some? (re-find #"^[A-Z]" (first elem))))
+(defn sentence-start? [state]
+  (some? (re-find #"^[A-Z]" (first state))))
 
 (defn generate-sentence [markov-chain]
-  (let [start (->> (markov/elements markov-chain)
-                   (filter valid-start?)
+  (let [start (->> (markov/states markov-chain)
+                   (filter sentence-start?)
                    (rand-nth))]
     (str/join " " (markov/generate markov-chain start sentence-ending?))))
 
 ;; interacting with the API
 
 (defn environment-setup? []
-  (and (and (:mastodon-instance env) (:access-token env))))
+  (and (:mastodon-instance env) (:access-token env)))
 
 (defn send-toot! [text]
   (when (environment-setup?)

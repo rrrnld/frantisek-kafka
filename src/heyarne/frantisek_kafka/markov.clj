@@ -32,7 +32,7 @@
         next-phrase
         (recur next-phrase)))))
 
-(defn elements
+(defn states
   "Returns all items in the markov chain for which a transition is defined."
   [markov-chain]
   (vec (keys markov-chain)))
