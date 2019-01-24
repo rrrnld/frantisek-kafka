@@ -87,6 +87,9 @@
   (println message)
   (System/exit status))
 
+(defn count-words [sentence]
+  (inc (count (re-seq #" " sentence))))
+
 (defn start! [{:keys [corpus order interval]}]
   (let [markov-chain (->> (read-corpus corpus)
                           (markov/chain order))]
@@ -95,8 +98,10 @@
       (log/warn "Please set :access-token and :mastodon-instance in the .env file.")
       (log/warn "The bot is running in debug mode for now."))
     (loop [sentence (generate-sentence markov-chain)]
-      (send-toot! sentence)
-      (Thread/sleep (* interval 1000))
+      (when (< (count-words sentence) 20)
+        ;; shorter sentences are more likely to be coherent. :)
+        (send-toot! sentence)
+        (Thread/sleep (* interval 1000)))
       (recur (generate-sentence markov-chain)))))
 
 (defn -main [& args]
