@@ -13,10 +13,19 @@
 (defn read-corpus [files]
   (flatten (for [file files]
              (-> (slurp file)
-                 (str/replace #"\"" "")
+                 (str/replace #"[^\sa-zA-ZäöüÄÖÜß',.:!?]" "")
                  (str/split #"\s+")))))
 
-(def sentence-ending? #(some? (re-find #"[.?!]$" %)))
+(defn sentence-ending? [words]
+  (let [last-word (last words)
+        second-to-last (last (butlast words))]
+    (and
+     (re-find #"[.?!]$" last-word)
+     (or
+      (not (#{"Mr." "Mrs."} last-word))
+      ;; if it ends with a title, the title needs an article before that
+      (and (#{"Mr." "Mrs."} last-word)
+           (not (#{"the" "a"} second-to-last)))))))
 
 (defn sentence-start? [state]
   (some? (re-find #"^[A-Z]" (first state))))
@@ -78,7 +87,7 @@
       {:exit-message (error-message errors)}
 
       (> (count arguments) 0)
-      {:corpus arguments :order (:order options) :interval (:interval options)}
+      (merge options {:corpus arguments})
 
       :else
       {:exit-message (usage summary)})))

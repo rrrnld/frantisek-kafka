@@ -28,7 +28,7 @@
   (loop [phrase (vec start)]
     (let [next-word (rand-nth (get markov-chain (take-last (count start) phrase)))
           next-phrase (conj phrase next-word)]
-      (if (should-end? next-word)
+      (if (should-end? next-phrase)
         next-phrase
         (recur next-phrase)))))
 
