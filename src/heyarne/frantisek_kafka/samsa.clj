@@ -99,6 +99,13 @@
 (defn count-words [sentence]
   (inc (count (re-seq #" " sentence))))
 
+(defn examples
+  "Will return a preview of the text that will be generated."
+  [corpus order]
+  (let [markov-chain (->> (read-corpus corpus)
+                          (markov/chain order))]
+    (repeatedly 10 #(generate-sentence markov-chain))))
+
 (defn start! [{:keys [corpus order interval]}]
   (let [markov-chain (->> (read-corpus corpus)
                           (markov/chain order))]
